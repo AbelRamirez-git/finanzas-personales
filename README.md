@@ -1,39 +1,65 @@
-# 💰 Finanzas Personales
+# Finanzas Personales
 
-Proyecto de aprendizaje orientado a la gestión y análisis de ingresos, gastos y ahorro.
+Aplicación local de finanzas personales desarrollada con Python, Flask y SQLite. Permite registrar ingresos y gastos mediante comandos de texto, mantener un ahorro manual independiente, visualizar indicadores y exportar datos a Excel.
 
-## 🎯 Objetivo
+## Funciones
 
-Construir una aplicación que permita registrar movimientos financieros y obtener información útil a partir de los datos, aplicando progresivamente principios de desarrollo de software, bases de datos, APIs y visualización.
+- Registro de ingresos y gastos.
+- Saldo disponible = ingresos - gastos.
+- Ahorro actual administrado manualmente, sin mezclarlo con los movimientos.
+- Aportes, retiros y ajuste directo del ahorro.
+- Dashboard responsive con Chart.js.
+- Gastos por categoría y por mes.
+- Historial de ahorro.
+- Exportación automática a Excel.
+- Validaciones de datos y mensajes de error controlados.
 
-## 🧰 Tecnologías
+## Comandos
 
-La implementación evolucionará durante el proyecto. Entre las tecnologías trabajadas se encuentran:
+```text
+ingreso 1500000 salario
+gasto 25000 comida
+ahorrar 300000
+establecer ahorro 500000
+retirar ahorro 50000
+saldo
+resumen
+ahorro actual
+mayor gasto
+ayuda
+```
 
-- Python
-- Flask
-- SQLite
-- HTML / CSS
-- JavaScript
-- Chart.js
+## Instalación
 
-La arquitectura será revisada y evolucionada posteriormente hacia tecnologías del ecosistema .NET como parte de mi formación.
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python -m database.db
+python web/app.py
+```
 
-## 📌 Funcionalidades previstas
+Luego abre `http://127.0.0.1:5000`.
 
-- Registro de ingresos y gastos
-- Categorización de movimientos
-- Consulta de saldo
-- Análisis de gastos
-- Visualización de información
-- Importación de información financiera
-- Pruebas automatizadas
+En Windows también puedes ejecutar `iniciar_finanzas.bat`.
 
-## 🚧 Estado
+## Privacidad
 
-Proyecto en evolución. La documentación se actualizará conforme se incorporen funcionalidades y mejoras técnicas.
+`finanzas.db` y los Excel generados están excluidos por `.gitignore`, por lo que los datos financieros personales no deben subirse a GitHub.
 
-## 👤 Autor
+## Pruebas
 
-**Abel Ramirez Munar**  
-Estudiante de Ingeniería de Sistemas
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Estructura principal
+
+```text
+core/            lógica de comandos y consultas
+database/        persistencia SQLite
+excel/           exportación a Excel
+visualizacion/   gráficos de escritorio opcionales
+web/             aplicación Flask y dashboard
+tests/           pruebas automatizadas
+```
