@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Finanzas personales</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root{--bg:#07111f;--panel:#111c2d;--line:#26364d;--text:#e7eef8;--muted:#95a4b8;--accent:#4f9cf9;--good:#37c978;--bad:#ff6b6b}
+        *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#050a12,#0b1422);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif;min-height:100vh}
+        .app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.sidebar{padding:24px 18px;border-right:1px solid var(--line);background:rgba(7,17,31,.9);position:sticky;top:0;height:100vh}
+        .brand{font-size:20px;font-weight:800;margin-bottom:24px}.brand span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:4px}.nav a{display:block;padding:11px 12px;color:var(--text);text-decoration:none;border-radius:10px;margin:6px 0}.nav a:hover{background:#15243a}
+        main{padding:28px}.container{max-width:1250px;margin:auto}.top h1{margin:0;font-size:32px}.top p,.muted{color:var(--muted)}
+        .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}.card,.panel{background:rgba(17,28,45,.92);border:1px solid var(--line);border-radius:18px;padding:18px}.label{color:var(--muted);font-size:13px}.value{font-size:27px;font-weight:800;margin-top:8px}
+        .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.panel{margin-bottom:16px}.panel h2{margin-top:0}.form{display:grid;grid-template-columns:1fr auto;gap:10px}input{background:#0c1727;border:1px solid var(--line);color:var(--text);padding:13px;border-radius:11px;font-size:15px}button{border:0;border-radius:11px;padding:13px 18px;background:var(--accent);color:white;font-weight:700;cursor:pointer}.response{white-space:pre-line;margin-top:12px;min-height:20px}
+        .commands{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.commands div{background:#0d1828;padding:14px;border-radius:12px}.commands code{display:block;margin:8px 0;color:#cfe4ff}
+        .chart{height:330px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:700px}th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line)}th{color:#c8d5e6}td{font-size:14px}.empty{text-align:center;color:var(--muted);padding:24px}
+        @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.stats{grid-template-columns:1fr 1fr}.grid2,.commands{grid-template-columns:1fr}}
+        @media(max-width:560px){main{padding:16px}.stats{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="brand">Finanzas<span>Control personal</span></div>
+        <nav class="nav">
+            <a href="#resumen">Resumen</a><a href="#registrar">Registrar</a><a href="#comandos">Comandos</a><a href="#graficos">Gráficos</a><a href="#historial">Historial</a>
+        </nav>
+    </aside>
+    <main><div class="container">
+        <header class="top"><h1>Dashboard financiero</h1><p>Ingresos y gastos por un lado; ahorro manual por separado.</p></header>
+
+        <section id="resumen" class="stats">
+            <div class="card"><div class="label">Saldo disponible</div><div class="value">${{ saldo|cop }}</div></div>
+            <div class="card"><div class="label">Ingresos</div><div class="value">${{ ingresos|cop }}</div></div>
+            <div class="card"><div class="label">Gastos</div><div class="value">${{ gastos|cop }}</div></div>
+            <div class="card"><div class="label">Ahorro actual</div><div class="value">${{ ahorro_actual|cop }}</div></div>
+        </section>
+
+        <section id="registrar" class="panel"><h2>Registrar</h2>
+            <div class="form"><input id="comando-input" placeholder="Ej: gasto 20000 comida / ingreso 500000 salario / ahorrar 300000"><button id="enviar-btn" onclick="enviar()">Enviar</button></div>
+            <div id="respuesta" class="response"></div>
+        </section>
+
+        <section id="comandos" class="panel"><h2>Comandos disponibles</h2><p class="muted">El ahorro es manual e independiente del cálculo ingresos - gastos.</p>
+            <div class="commands">
+                <div><strong>Movimientos</strong><code>ingreso 1500000 salario</code><code>gasto 25000 comida</code></div>
+                <div><strong>Ahorro manual</strong><code>ahorrar 300000</code><code>establecer ahorro 500000</code><code>retirar ahorro 50000</code></div>
+                <div><strong>Consultas</strong><code>saldo</code><code>resumen</code><code>ahorro actual</code><code>mayor gasto</code><code>ayuda</code></div>
+            </div>
+        </section>
+
+        <section id="graficos" class="grid2">
+            <div class="panel chart"><h2>Resumen general</h2><canvas id="general"></canvas></div>
+            <div class="panel chart"><h2>Gastos por categoría</h2><canvas id="categorias"></canvas></div>
+            <div class="panel chart"><h2>Gastos por mes</h2><canvas id="mes"></canvas></div>
+            <div class="panel chart"><h2>Variación del ahorro</h2><canvas id="ahorro"></canvas></div>
+        </section>
+
+        <section id="historial" class="panel"><h2>Historial de movimientos</h2><div class="table-wrap"><table>
+            <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Valor</th></tr></thead>
+            <tbody>{% for m in movimientos %}<tr><td>{{ m[0] }}</td><td>{{ m[1] }}</td><td>{{ m[2] }}</td><td>{{ m[3] }}</td><td>{{ m[4] }}</td><td>${{ m[5]|cop }}</td></tr>{% else %}<tr><td colspan="6" class="empty">Aún no hay movimientos registrados.</td></tr>{% endfor %}</tbody>
+        </table></div></section>
+    </div></main>
+</div>
+<script>
+Chart.defaults.color="#cbd5e1";
+new Chart(document.getElementById("general"),{type:"bar",data:{labels:["Ingresos","Gastos","Ahorro actual"],datasets:[{label:"COP",data:[{{ ingresos }},{{ gastos }},{{ ahorro_actual }}]}]},options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById("categorias"),{type:"doughnut",data:{labels:{{ labels|tojson }},datasets:[{data:{{ valores|tojson }}}]},options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById("mes"),{type:"line",data:{labels:{{ labels_mes|tojson }},datasets:[{label:"Gastos",data:{{ valores_mes|tojson }},tension:.3}]},options:{responsive:true,maintainAspectRatio:false}});
+new Chart(document.getElementById("ahorro"),{type:"line",data:{labels:{{ labels_ahorro|tojson }},datasets:[{label:"Variación neta",data:{{ valores_ahorro|tojson }},tension:.3}]},options:{responsive:true,maintainAspectRatio:false}});
+async function enviar(){const input=document.getElementById("comando-input"),respuesta=document.getElementById("respuesta"),btn=document.getElementById("enviar-btn");const texto=input.value.trim();if(!texto){respuesta.innerText="Escribe un comando antes de enviarlo.";return;}btn.disabled=true;try{const r=await fetch("/comando",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({texto})});const data=await r.json();respuesta.innerText=data.respuesta;if(r.ok)setTimeout(()=>location.reload(),450);}catch(e){respuesta.innerText="No se pudo conectar con el servidor.";}finally{btn.disabled=false;}}
+document.getElementById("comando-input").addEventListener("keydown",e=>{if(e.key==="Enter")enviar();});
+</script>
+</body></html>
